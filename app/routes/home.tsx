@@ -20,7 +20,7 @@ export default function Home() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if(auth.isAuthenticated) navigate('/auth?next=/');
+    if(!auth.isAuthenticated) navigate('/auth?next=/');
   }, [auth.isAuthenticated])
 
   // @ts-ignore
@@ -33,18 +33,18 @@ export default function Home() {
             <h2> Review your submission and check AI-powered feedback. </h2>
           </div>
 
-          {/* {resumes.length > 0 
+          {resumes?.length > 0 
           ? 
             (
             <div className="resumes-section">
-              {resumes.map((resume) => (
+              {resumes.map((resume: Resume) => (
                 <ResumeCard key={resume.id} resume={resume} />
               ))}
             </div>
             )
           : 
             null
-          } */}
+          }
         </section>
 
         

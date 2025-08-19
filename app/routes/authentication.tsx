@@ -1,4 +1,3 @@
-import { title } from 'process'
 import React, { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { usePuterStore } from '~/lib/puter'
@@ -8,16 +7,15 @@ export const meta = () => ([
     {name: 'description', content: 'Log into your account'},
 ])
 
-const auth = () => {
-    
-    const { isLoading, auth } = usePuterStore();
+const Authentication = () => {
+  const { isLoading, auth } = usePuterStore();
     
     const location = useLocation();
     const next = location.search.split('next=')[1];
-    const naviigate = useNavigate();
+    const navigate = useNavigate();
 
     useEffect(() => {
-      if(auth.isAuthenticated) naviigate(next);
+      if(auth.isAuthenticated) navigate(next);
     }, [auth.isAuthenticated, next])
     
 
@@ -54,4 +52,4 @@ const auth = () => {
   );
 }
 
-export default auth
+export default Authentication
