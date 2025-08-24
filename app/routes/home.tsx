@@ -1,9 +1,9 @@
 import Navbar from "~/components/Navbar";
 import type { Route } from "./+types/home";
 import ResumeCard from "~/components/ResumeCard";
-import { resumes } from "constants";
+// import { resumes } from "constants";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { usePuterStore } from "~/lib/puter";
 
 
@@ -17,25 +17,34 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Home() {
     
-  const { auth, fs } = usePuterStore();
+  const { auth, kv } = usePuterStore();
   const navigate = useNavigate();
 
-  const [resume, setResume] = useState();
+  const [resumes, setResumes] = useState<Resume[]>([]);
+  const [loadingResumes, setLoadingResumes] = useState(false);
 
   useEffect(() => {
     if(!auth.isAuthenticated) navigate('/auth?next=/');
   }, [auth.isAuthenticated])
 
-  // useEffect(() => {
-  //   const loadResume = async () => {
-  //     const blob = await fs.read(resume.imagePath);
-  //     if(!blob) return;
-  //     let url = URL.createObjectURL(blob);
-  //     setResume(url);
-  //   }
+  useEffect(() => {
+    const loadResumes = async() => {
+      setLoadingResumes(true);
 
-  //   loadResume();
-  // }, [])
+      const resumes = (await kv.list('resume:*', true)) as KVItem[];
+
+      const persedResumes = resumes?.map((resume) => (
+        JSON.parse(resume.value) as Resume
+      ))
+
+      console.log("ParsedResumes", persedResumes);
+
+      setResumes(persedResumes || []);
+      setLoadingResumes(false);
+    }
+
+    loadResumes();
+  }, [])
   
 
   // @ts-ignore
@@ -45,10 +54,22 @@ export default function Home() {
         <section className="main-section py-16">
           <div className="page-heading">
             <h1> Track Your Application & Resume Ratings</h1>
-            <h2> Review your submission and check AI-powered feedback. </h2>
+
+            {(!loadingResumes && resumes?.length === 0) ? (
+              <h2> No Resumes found. Upload your first resume to get feedback </h2>
+            ) : (
+              <h2> Review your submission and check AI-powered feedback. </h2>
+            )}
+            
           </div>
 
-          {resumes?.length > 0 
+          {loadingResumes && (
+            <div className="flex flex-col items-center justify-center">
+              <img src="/images/resume-scan-2.gif" className="w-[200px]"/>
+            </div>
+          )}
+
+          {!loadingResumes && resumes?.length > 0 
           ? 
             (
             <div className="resumes-section">
@@ -60,6 +81,14 @@ export default function Home() {
           : 
             null
           }
+
+          {(!loadingResumes && resumes?.length === 0) && (
+            <div className="flex flex-col items-center justify-center mt-10 gap-4">
+              <Link to="/upload" className="primary-button w-fit text-xl font-semibold">
+                Upload Resume
+              </Link>
+            </div>
+          )} 
         </section>
 
         
